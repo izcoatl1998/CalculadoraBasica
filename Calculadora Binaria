@@ -1,0 +1,81 @@
+#include <18F4620.h>
+#fuses HS, NOFCMEN, NOIESO, PUT, NOBROWNOUT, NOWDT
+#fuses NOPBADEN, NOMCLR, STVREN, NOLVP, NODEBUG
+#use delay(clock=16000000)
+#include <stdio.h>
+#include <stdlib.h>
+//#define __DEBUG_SERIAL__ //Si comentas esta linea se deshabilita el debug por serial y el PIN_C6 puede ser usado en forma digital I/O
+
+#ifdef __DEBUG_SERIAL__
+   #define TX_232        PIN_C6
+   #use RS232(BAUD=9600, XMIT=TX_232, BITS=8,PARITY=N, STOP=1)
+   #use fast_io(c)
+#endif
+void main(){
+    setup_oscillator(OSC_16MHZ);
+    set_tris_a(0x00);
+    set_tris_b(0x0F);
+    set_tris_c(0xff);
+    set_tris_d(0xff);
+    long n1,n2;
+    long resultado;
+    long i;
+    while(TRUE){
+        n1=input_c();
+        n2=input_d();
+        if(input(PIN_B4) == 1 && (input(PIN_B5) == 0 && input(PIN_B6) == 0 && input(PIN_B7) == 0 ) ){
+            resultado=n1-n2;
+           }
+           
+         else if(input(PIN_B5)==1&&input(PIN_B4)==0&&input(PIN_B6)==0&&input(PIN_B7)==0){
+            resultado=n1+n2;
+            }  
+         else if(input(PIN_B6)==1&&input(PIN_B5)==0&&input(PIN_B4)==0&&input(PIN_B7)==0){
+            if(n2==0){
+
+                   for(i=128;i>=0;i/=2){
+                   output_e(i>>10);    
+                   output_a(i);
+                   delay_ms(400);
+                   }
+             }
+             else{
+                resultado=n1/n2;
+             }
+         }
+         
+         else if(input(PIN_B7)){
+                 resultado=n1*n2;
+              }
+         //output_b(resultado>>6);
+         //impriman cada uno de los led, ya que a sobrescribir el resultado dentro del 
+         //mismo puerto que estar mostrando y registrndo los botones estos empiezan a activarces.
+         if(resultado>>6 ==1 ){
+            output_high(PIN_B0);      
+         }
+         else{
+            output_low(PIN_B0);
+         }
+           if(resultado>>7 ==1 ){
+            output_high(PIN_B1);      
+         }
+         else{
+            output_low(PIN_B1);
+         }
+           if(resultado>>8 ==1 ){
+            output_high(PIN_B2);      
+         }
+         else{
+            output_low(PIN_B2);
+         }
+           if(resultado>>9 ==1 ){
+            output_high(PIN_B3);      
+         }
+         else{
+            output_low(PIN_B3);
+         }
+         output_e(resultado>>10);    
+         output_a(resultado);
+         }
+           
+       }
